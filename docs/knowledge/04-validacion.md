@@ -641,7 +641,7 @@ Actualizar esta tabla a medida que se completen validaciones:
 | R3 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Update de 1 documento (Colombia #10): nombreCamiseta "JAMES" → "RODRÍGUEZ", club "FC Bayern München (GER)" → "Real Madrid CF (ESP)". Idempotencia comprobada: segunda ejecución modifiedCount=0, todos los valores correctos. |
 | R4 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Insert de 1 documento: Colombia vs England (20/08/18, 6:00:00 p. m.). Partidos: 2 → 3. Idempotencia comprobada: segunda ejecución detectó duplicado, no insertó, partidos permanecieron en 3. |
 | R5 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Update de 1 documento (Poland vs Colombia 26/07/18): hora "6:00:00 p. m." → "7:30:00 p. m.". Equipos y fecha intactos. Idempotencia comprobada: segunda ejecución modifiedCount=0, todos los valores correctos. |
-| R6 | PENDIENTE | - | - |
+| R6 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Delete de 1 documento: Colombia vs England (20/08/18). Partidos: 3 → 2. Otros partidos intactos. Idempotencia comprobada: segunda ejecución no eliminó nada, partidos permanecieron en 2. |
 | R7 | PENDIENTE | - | - |
 | R8 | PENDIENTE | - | - |
 | R9 | PENDIENTE | - | - |
