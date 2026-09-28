@@ -21,7 +21,7 @@
 | R7 | Consultar jugadores de Japan (nombre, fecha nacimiento, posición, club) | QUERY | 5% | VALIDADO | `R7-query-japan.js` |
 | R8 | Consultar jugadores con estatura < 170 cm | QUERY | 5% | VALIDADO | `R8-query-altura.js` |
 | R9 | Consultar todos los partidos | QUERY | 5% | VALIDADO | `R9-query-partidos.js` |
-| R10 | Consultar jugadores con altura máxima (incluir empates) | QUERY | 10% | PENDIENTE | `R10-query-max-height.js` |
+| R10 | Consultar jugadores con altura máxima (incluir empates) | QUERY | 10% | VALIDADO | `R10-query-max-height.js` |
 
 **Total:** 100%
 

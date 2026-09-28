@@ -645,7 +645,7 @@ Actualizar esta tabla a medida que se completen validaciones:
 | R7 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 23 jugadores de Japan, proyección exacta (nombre, fechaNacimiento, posicion, club, sin _id). Conteo independiente validado: 23. Integridad de datos confirmada. |
 | R8 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 3 jugadores con estatura < 170 (OSHIMA 168, QUINTERO 169, INUI 169). Información completa mostrada. Filtro aplicado correctamente. Integridad de datos confirmada. |
 | R9 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 2 partidos encontrados (Colombia vs Japan 11/07/18, Poland vs Colombia 26/07/18 con hora 7:30:00 p. m. de R5). Colombia vs England confirmado eliminado. countDocuments() = 2. |
-| R10 | PENDIENTE | - | - |
+| R10 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. AGGREGATE/FIND: altura máxima 194 cm calculada dinámicamente, 1 jugador encontrado (MINA Yerry). Lógica soporta empates. Ningún documento superior a máximo. Integridad confirmada. |
 
 ---
 
