@@ -637,7 +637,7 @@ Actualizar esta tabla a medida que se completen validaciones:
 | R | Estado | Fecha | Nota |
 |---|---|---|---|
 | R1 | VALIDADO | 2026-09-27 | Validado en MongoDB 8.3.11 local vía mongosh (MongoDB Compass). Colecciones creadas correctamente: equipos, jugadores, partidos (vacías como esperado). |
-| R2 | PENDIENTE | - | - |
+| R2 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Inserción de 2 equipos, 46 jugadores (23 Colombia + 23 Japan), 2 partidos. Idempotencia comprobada: segunda ejecución omitió duplicados sin alterar datos. |
 | R3 | PENDIENTE | - | - |
 | R4 | PENDIENTE | - | - |
 | R5 | PENDIENTE | - | - |
