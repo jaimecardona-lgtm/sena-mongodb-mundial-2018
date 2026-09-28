@@ -12,7 +12,7 @@
 
 | ID | Descripción | Tipo | Peso | Estado | Script |
 |---|---|---|---|---|---|
-| R1 | Crear colecciones para representar la información del sistema | DDL | 20% | PENDIENTE | `R1-colecciones.js` |
+| R1 | Crear colecciones para representar la información del sistema | DDL | 20% | VALIDADO | `R1-colecciones.js` |
 | R2 | Registrar datos de prueba (Colombia, Japan) | INSERT | 20% | PENDIENTE | `R2-seed.js` |
 | R3 | Actualizar registro de James Rodríguez | UPDATE | 10% | PENDIENTE | `R3-update-james.js` |
 | R4 | Registrar partido: Colombia vs. England (20/08/18) | INSERT | 5% | PENDIENTE | `R4-insert-partido.js` |

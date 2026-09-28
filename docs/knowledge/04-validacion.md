@@ -636,7 +636,7 @@ Actualizar esta tabla a medida que se completen validaciones:
 
 | R | Estado | Fecha | Nota |
 |---|---|---|---|
-| R1 | PENDIENTE | - | - |
+| R1 | VALIDADO | 2026-09-27 | Validado en MongoDB 8.3.11 local vía mongosh (MongoDB Compass). Colecciones creadas correctamente: equipos, jugadores, partidos (vacías como esperado). |
 | R2 | PENDIENTE | - | - |
 | R3 | PENDIENTE | - | - |
 | R4 | PENDIENTE | - | - |
