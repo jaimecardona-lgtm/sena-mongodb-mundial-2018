@@ -644,7 +644,7 @@ Actualizar esta tabla a medida que se completen validaciones:
 | R6 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Delete de 1 documento: Colombia vs England (20/08/18). Partidos: 3 → 2. Otros partidos intactos. Idempotencia comprobada: segunda ejecución no eliminó nada, partidos permanecieron en 2. |
 | R7 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 23 jugadores de Japan, proyección exacta (nombre, fechaNacimiento, posicion, club, sin _id). Conteo independiente validado: 23. Integridad de datos confirmada. |
 | R8 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 3 jugadores con estatura < 170 (OSHIMA 168, QUINTERO 169, INUI 169). Información completa mostrada. Filtro aplicado correctamente. Integridad de datos confirmada. |
-| R9 | PENDIENTE | - | - |
+| R9 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 2 partidos encontrados (Colombia vs Japan 11/07/18, Poland vs Colombia 26/07/18 con hora 7:30:00 p. m. de R5). Colombia vs England confirmado eliminado. countDocuments() = 2. |
 | R10 | PENDIENTE | - | - |
 
 ---
