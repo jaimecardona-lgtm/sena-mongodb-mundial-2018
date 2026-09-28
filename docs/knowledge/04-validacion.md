@@ -639,7 +639,7 @@ Actualizar esta tabla a medida que se completen validaciones:
 | R1 | VALIDADO | 2026-09-27 | Validado en MongoDB 8.3.11 local vía mongosh (MongoDB Compass). Colecciones creadas correctamente: equipos, jugadores, partidos (vacías como esperado). |
 | R2 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Inserción de 2 equipos, 46 jugadores (23 Colombia + 23 Japan), 2 partidos. Idempotencia comprobada: segunda ejecución omitió duplicados sin alterar datos. |
 | R3 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Update de 1 documento (Colombia #10): nombreCamiseta "JAMES" → "RODRÍGUEZ", club "FC Bayern München (GER)" → "Real Madrid CF (ESP)". Idempotencia comprobada: segunda ejecución modifiedCount=0, todos los valores correctos. |
-| R4 | PENDIENTE | - | - |
+| R4 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Insert de 1 documento: Colombia vs England (20/08/18, 6:00:00 p. m.). Partidos: 2 → 3. Idempotencia comprobada: segunda ejecución detectó duplicado, no insertó, partidos permanecieron en 3. |
 | R5 | PENDIENTE | - | - |
 | R6 | PENDIENTE | - | - |
 | R7 | PENDIENTE | - | - |
