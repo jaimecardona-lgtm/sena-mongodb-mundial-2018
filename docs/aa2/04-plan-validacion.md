@@ -355,6 +355,48 @@ GET /api/equipos/5
 - [x] ✅ db.jugadores.countDocuments() = 46
 - [x] ✅ db.partidos.countDocuments() = 2
 
+### CRUD Partidos Validado en Vivo
+
+- [x] Archivo `api/src/models/partido.model.js` con schema Mongoose y validación hora
+- [x] Archivo `api/src/controllers/partido.controller.js` con 5 funciones + validación hora
+- [x] Archivo `api/src/routes/partido.routes.js` montadas en /api/partidos
+- [x] Actualización `api/src/app.js` importa y monta rutas
+- [x] Documentación `docs/aa2/03-endpoints.md` completa de CRUD Partidos
+- [x] Documentación `docs/aa2/04-plan-validacion.md` con resultados en vivo
+- [x] Sintaxis válida en todos los archivos nuevos
+- [x] 0 vulnerabilidades en npm audit
+- [x] Los 10 scripts R1-R10 continúan sin modificaciones
+- [x] `data/source/Datafile.xlsx` continúa intacto
+
+**Validación en Vivo - Resultados REALES:**
+
+**GET /api/partidos**
+- [x] ✅ HTTP 200, status=success, count=2, orden _id ascendente
+- [x] ✅ Datos: Colombia vs Japan (11/07/18, 12:00:00 p. m.), Poland vs Colombia (26/07/18, 7:30:00 p. m.)
+
+**GET /api/partidos/:id**
+- [x] ✅ ObjectId válido existente (6ab9e8bf727d291b5689f8c1) → HTTP 200 (Colombia vs Japan)
+- [x] ✅ ObjectId inválido (abc) → HTTP 400 "El id del partido no es válido"
+- [ ] ObjectId válido inexistente → HTTP 404 (no probado en esta validación)
+
+**GET con filtros**
+- [x] ✅ ?equipo=Colombia → HTTP 200, count=2
+
+**POST /api/partidos**
+- [x] ✅ POST válido (Brazil vs Germany, 07/07/18, 2:00:00 p. m.) → HTTP 201, _id asignado
+- [x] ✅ POST duplicado inverso (Germany vs Brazil, misma fecha/hora) → HTTP 409
+
+**PUT /api/partidos/:id**
+- [x] ✅ PUT válido → HTTP 200, _id sin cambios
+- [x] ✅ PUT idéntico repetido → HTTP 200 (idempotencia)
+
+**DELETE /api/partidos/:id**
+- [x] ✅ DELETE válido → HTTP 200
+- [x] ✅ GET post-delete → HTTP 404
+
+**Baseline Final**
+- [x] ✅ db.equipos = 2, db.jugadores = 46, db.partidos = 2
+
 ### Validación Técnica
 
 - [x] `npm install` sin errores (completado)
@@ -366,6 +408,12 @@ GET /api/equipos/5
 - [x] CRUD Equipos: Sintaxis verificada
 - [x] CRUD Equipos: Auditoría npm completada
 - [x] CRUD Equipos: Pruebas en vivo COMPLETADAS y VALIDADAS
+- [x] CRUD Jugadores: Sintaxis verificada
+- [x] CRUD Jugadores: Auditoría npm completada
+- [x] CRUD Jugadores: Pruebas en vivo COMPLETADAS y VALIDADAS
+- [x] CRUD Partidos: Sintaxis verificada
+- [x] CRUD Partidos: Auditoría npm completada
+- [x] CRUD Partidos: Pruebas en vivo COMPLETADAS y VALIDADAS
 
 ---
 
@@ -425,6 +473,6 @@ GET /api/equipos/5
 
 ---
 
-**Versión:** 3.0
+**Versión:** 4.0
 **Fecha:** 2026-10-06
-**Estado:** CRUD Equipos validado, CRUD Jugadores implementado (pendiente validación en vivo), Partidos pendiente
+**Estado:** CRUD Equipos, CRUD Jugadores, CRUD Partidos — VALIDADOS EN VIVO

@@ -587,31 +587,313 @@ curl http://localhost:3000/api/jugadores/6ab9e8be727d291b5689f893
 
 ---
 
-## Endpoints PENDIENTES
+## Partidos
 
-Los siguientes endpoints se especificarán en fases posteriores:
+**Nota:** Partidos NO posee un campo `id` funcional. Se usa MongoDB `_id` (ObjectId) como identificador. Los duplicados se validan por fecha + hora + equipos (considerando orden inverso).
 
----
+### GET /api/partidos
 
----
+**Propósito:** Listar todos los partidos con filtros opcionales
 
-### Partidos (GET, POST, PUT, DELETE)
-- [ ] GET `/api/partidos` — Listar todos los partidos
-- [ ] GET `/api/partidos/:id` — Obtener partido por ID
-- [ ] POST `/api/partidos` — Crear nuevo partido
-- [ ] PUT `/api/partidos/:id` — Actualizar partido
-- [ ] DELETE `/api/partidos/:id` — Eliminar partido
+**Método HTTP:** GET
 
-**Estructura esperada (Partido):**
+**Parámetros de query (opcionales):**
+- `equipo` (string): Filtrar partidos donde equipo1 o equipo2 coincida (ej: "Colombia")
+- `fecha` (string): Filtrar por fecha exacta en formato DD/MM/YY (ej: "11/07/18")
+
+Los filtros pueden combinarse: `?equipo=Colombia&fecha=11/07/18`
+
+**Respuesta exitosa (200):**
 ```json
 {
-  "_id": "ObjectId",
-  "equipo1": "Colombia",
-  "equipo2": "England",
-  "fecha": "20/08/18",
-  "hora": "6:00:00 p. m."
+  "status": "success",
+  "count": 2,
+  "data": [
+    {
+      "_id": "6ab9e8bf727d291b5689f8c1",
+      "equipo1": "Colombia",
+      "equipo2": "Japan",
+      "fecha": "11/07/18",
+      "hora": "12:00:00 p. m."
+    },
+    {
+      "_id": "6ab9e8bf727d291b5689f8c2",
+      "equipo1": "Poland",
+      "equipo2": "Colombia",
+      "fecha": "26/07/18",
+      "hora": "7:30:00 p. m."
+    }
+  ]
 }
 ```
+
+**Respuesta - Sin resultados (200):**
+```json
+{
+  "status": "success",
+  "count": 0,
+  "data": []
+}
+```
+
+**Respuesta - Validación fallida (400):**
+```json
+{
+  "status": "error",
+  "message": "La fecha debe estar en formato DD/MM/YY"
+}
+```
+
+**Ejemplo:**
+```bash
+curl "http://localhost:3000/api/partidos?equipo=Colombia"
+curl "http://localhost:3000/api/partidos?fecha=11/07/18"
+curl "http://localhost:3000/api/partidos?equipo=Colombia&fecha=11/07/18"
+```
+
+---
+
+### GET /api/partidos/:id
+
+**Propósito:** Obtener un partido específico por MongoDB ObjectId
+
+**Método HTTP:** GET
+
+**Parámetros:**
+- `id` (path, requerido): MongoDB ObjectId del partido (24 caracteres hexadecimales)
+
+**Respuesta exitosa (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "_id": "6ab9e8bf727d291b5689f8c1",
+    "equipo1": "Colombia",
+    "equipo2": "Japan",
+    "fecha": "11/07/18",
+    "hora": "12:00:00 p. m."
+  }
+}
+```
+
+**Respuesta - ObjectId inválido (400):**
+```json
+{
+  "status": "error",
+  "message": "El id del partido no es válido"
+}
+```
+
+**Respuesta - No encontrado (404):**
+```json
+{
+  "status": "error",
+  "message": "Partido no encontrado"
+}
+```
+
+**Ejemplo:**
+```bash
+curl http://localhost:3000/api/partidos/6ab9e8bf727d291b5689f8c1
+```
+
+---
+
+### POST /api/partidos
+
+**Propósito:** Crear un nuevo partido
+
+**Método HTTP:** POST
+
+**Body requerido:**
+```json
+{
+  "equipo1": "Brazil",
+  "equipo2": "Germany",
+  "fecha": "07/07/18",
+  "hora": "2:00:00 p. m."
+}
+```
+
+**Validaciones:**
+- Todos los campos requeridos
+- `equipo1` y `equipo2`: no vacíos, diferentes entre sí
+- `fecha`: formato DD/MM/YY
+- `hora`: string (formato esperado: "HH:MM:SS a. m." o "HH:MM:SS p. m.")
+- Duplicados: se considera duplicado si coinciden fecha + hora + (equipo1/equipo2 en cualquier orden)
+
+**Respuesta exitosa (201):**
+```json
+{
+  "status": "success",
+  "message": "Partido creado correctamente",
+  "data": {
+    "_id": "6ab9e8bf727d291b5689f8c3",
+    "equipo1": "Brazil",
+    "equipo2": "Germany",
+    "fecha": "07/07/18",
+    "hora": "2:00:00 p. m."
+  }
+}
+```
+
+**Respuesta - Validación fallida (400):**
+```json
+{
+  "status": "error",
+  "message": "Un equipo no puede jugar contra sí mismo"
+}
+```
+
+**Respuesta - Duplicado (409):**
+```json
+{
+  "status": "error",
+  "message": "El partido ya existe"
+}
+```
+
+**Ejemplo:**
+```bash
+curl -X POST http://localhost:3000/api/partidos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "equipo1": "Brazil",
+    "equipo2": "Germany",
+    "fecha": "07/07/18",
+    "hora": "2:00:00 p. m."
+  }'
+```
+
+---
+
+### PUT /api/partidos/:id
+
+**Propósito:** Actualizar un partido (reemplazo completo)
+
+**Método HTTP:** PUT
+
+**Parámetros:**
+- `id` (path, requerido): MongoDB ObjectId del partido
+
+**Body requerido:**
+```json
+{
+  "equipo1": "Brazil",
+  "equipo2": "Germany",
+  "fecha": "07/07/18",
+  "hora": "2:00:00 p. m."
+}
+```
+
+**Notas:**
+- Todos los campos del body son requeridos
+- Operación idempotente: ejecutar dos veces produce el mismo resultado
+- Los mismos equipos no pueden jugar entre sí
+
+**Respuesta exitosa (200):**
+```json
+{
+  "status": "success",
+  "message": "Partido actualizado correctamente",
+  "data": {
+    "_id": "6ab9e8bf727d291b5689f8c1",
+    "equipo1": "Brazil",
+    "equipo2": "Germany",
+    "fecha": "07/07/18",
+    "hora": "2:00:00 p. m."
+  }
+}
+```
+
+**Respuesta - ObjectId inválido (400):**
+```json
+{
+  "status": "error",
+  "message": "El id del partido no es válido"
+}
+```
+
+**Respuesta - No encontrado (404):**
+```json
+{
+  "status": "error",
+  "message": "Partido no encontrado"
+}
+```
+
+**Respuesta - Duplicado (409):**
+```json
+{
+  "status": "error",
+  "message": "El partido ya existe"
+}
+```
+
+**Ejemplo:**
+```bash
+curl -X PUT http://localhost:3000/api/partidos/6ab9e8bf727d291b5689f8c1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "equipo1": "Brazil",
+    "equipo2": "Germany",
+    "fecha": "07/07/18",
+    "hora": "2:00:00 p. m."
+  }'
+```
+
+---
+
+### DELETE /api/partidos/:id
+
+**Propósito:** Eliminar un partido
+
+**Método HTTP:** DELETE
+
+**Parámetros:**
+- `id` (path, requerido): MongoDB ObjectId del partido
+
+**Respuesta exitosa (200):**
+```json
+{
+  "status": "success",
+  "message": "Partido eliminado correctamente",
+  "data": {
+    "_id": "6ab9e8bf727d291b5689f8c1",
+    "equipo1": "Colombia",
+    "equipo2": "Japan",
+    "fecha": "11/07/18",
+    "hora": "12:00:00 p. m."
+  }
+}
+```
+
+**Respuesta - ObjectId inválido (400):**
+```json
+{
+  "status": "error",
+  "message": "El id del partido no es válido"
+}
+```
+
+**Respuesta - No encontrado (404):**
+```json
+{
+  "status": "error",
+  "message": "Partido no encontrado"
+}
+```
+
+**Ejemplo:**
+```bash
+curl -X DELETE http://localhost:3000/api/partidos/6ab9e8bf727d291b5689f8c1
+```
+
+---
+
+## Endpoints PENDIENTES
+
+Ninguno. CRUD completo implementado (Health, Equipos, Jugadores, Partidos).
 
 ---
 
@@ -657,6 +939,6 @@ curl -X POST http://localhost:3000/api/partidos \
 
 ---
 
-**Versión:** 2.0
+**Versión:** 3.0
 **Fecha:** 2026-10-06
-**Estado:** Health y CRUD Equipos implementados, Jugadores y Partidos pendientes
+**Estado:** Health y CRUD (Equipos, Jugadores, Partidos) implementados

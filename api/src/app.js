@@ -1,6 +1,7 @@
 import express from 'express';
 import { equipoRoutes } from './routes/equipo.routes.js';
 import { jugadorRoutes } from './routes/jugador.routes.js';
+import { partidoRoutes } from './routes/partido.routes.js';
 
 export function createApp() {
   const app = express();
@@ -18,6 +19,7 @@ export function createApp() {
   // CRUD endpoints
   app.use('/api/equipos', equipoRoutes);
   app.use('/api/jugadores', jugadorRoutes);
+  app.use('/api/partidos', partidoRoutes);
 
   // 404 handler
   app.use((req, res) => {
