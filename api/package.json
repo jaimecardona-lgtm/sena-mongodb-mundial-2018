@@ -1,0 +1,28 @@
+{
+  "name": "sena-mundial-2018-api",
+  "version": "1.0.0",
+  "description": "API RESTful para Copa Mundial FIFA 2018 - SENA AA2-EV01",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "Node.js",
+    "Express",
+    "MongoDB",
+    "Mongoose",
+    "API",
+    "REST",
+    "SENA"
+  ],
+  "author": "ja23cardona1406",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0"
+  }
+}

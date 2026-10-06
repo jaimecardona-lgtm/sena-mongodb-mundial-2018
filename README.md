@@ -49,8 +49,6 @@ Modelar un sistema de datos documental que capture la complejidad de un torneo i
 sena-mongodb-mundial-2018/
 │
 ├── README.md                          # Este archivo
-├── AGENTS.md                          # Instrucciones para agentes de trabajo
-├── CLAUDE.md                          # Directrices para Claude Code
 ├── .gitignore                         # Configuración de Git
 │
 ├── docs/
@@ -141,15 +139,22 @@ Cada requerimiento corresponde a una operación MongoDB específica:
 
 ## Estado Actual
 
-**Fase:** Foundation (estructural y documental)
+**Fase actual:** AA2-EV01 FOUNDATION
 
-- ✅ Inspección del repositorio
-- ✅ Análisis del modelo de datos
-- ✅ Creación de estructura base
+**AA1-EV02 (Completada):**
+- ✅ 10 scripts MongoDB (R1-R10) implementados y validados
 - ✅ Documentación de requerimientos
-- ✅ Definición de validación QA
-- ⏳ Implementación R1-R10 (próxima fase)
-- ⏳ Validación y evidencia (próxima fase)
+- ✅ Protocolo QA definido
+- ✅ Evidencia reproducible
+
+**AA2-EV01 (En progreso):**
+- ✅ Estructura API Foundation creada
+- ✅ Express app con health endpoint
+- ✅ Mongoose configurado
+- ✅ Documentación AA2 base
+- ⏳ Instalación npm
+- ⏳ Modelos CRUD
+- ⏳ Endpoints CRUD
 
 ## Ejecución Posterior
 
@@ -181,11 +186,10 @@ Esto es apropiado para MongoDB y mantiene consistencia con los datos académicos
 
 Para entender completamente el proyecto, revisar en orden:
 
-1. **[CLAUDE.md](./CLAUDE.md)** — Instrucciones técnicas detalladas
-2. **[docs/knowledge/01-requerimientos.md](./docs/knowledge/01-requerimientos.md)** — Especificación oficial
-3. **[docs/knowledge/02-modelo-datos.md](./docs/knowledge/02-modelo-datos.md)** — Decisiones de modelado
-4. **[docs/knowledge/03-mapeo-evidencia.md](./docs/knowledge/03-mapeo-evidencia.md)** — Trazabilidad R1-R10
-5. **[docs/knowledge/04-validacion.md](./docs/knowledge/04-validacion.md)** — Protocolo QA
+1. **[docs/knowledge/01-requerimientos.md](./docs/knowledge/01-requerimientos.md)** — Especificación oficial
+2. **[docs/knowledge/02-modelo-datos.md](./docs/knowledge/02-modelo-datos.md)** — Decisiones de modelado
+3. **[docs/knowledge/03-mapeo-evidencia.md](./docs/knowledge/03-mapeo-evidencia.md)** — Trazabilidad R1-R10
+4. **[docs/knowledge/04-validacion.md](./docs/knowledge/04-validacion.md)** — Protocolo QA
 
 ---
 
