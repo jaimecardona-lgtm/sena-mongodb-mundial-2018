@@ -636,16 +636,16 @@ Actualizar esta tabla a medida que se completen validaciones:
 
 | R | Estado | Fecha | Nota |
 |---|---|---|---|
-| R1 | PENDIENTE | - | - |
-| R2 | PENDIENTE | - | - |
-| R3 | PENDIENTE | - | - |
-| R4 | PENDIENTE | - | - |
-| R5 | PENDIENTE | - | - |
-| R6 | PENDIENTE | - | - |
-| R7 | PENDIENTE | - | - |
-| R8 | PENDIENTE | - | - |
-| R9 | PENDIENTE | - | - |
-| R10 | PENDIENTE | - | - |
+| R1 | VALIDADO | 2026-09-27 | Validado en MongoDB 8.3.11 local vía mongosh (MongoDB Compass). Colecciones creadas correctamente: equipos, jugadores, partidos (vacías como esperado). |
+| R2 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Inserción de 2 equipos, 46 jugadores (23 Colombia + 23 Japan), 2 partidos. Idempotencia comprobada: segunda ejecución omitió duplicados sin alterar datos. |
+| R3 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Update de 1 documento (Colombia #10): nombreCamiseta "JAMES" → "RODRÍGUEZ", club "FC Bayern München (GER)" → "Real Madrid CF (ESP)". Idempotencia comprobada: segunda ejecución modifiedCount=0, todos los valores correctos. |
+| R4 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Insert de 1 documento: Colombia vs England (20/08/18, 6:00:00 p. m.). Partidos: 2 → 3. Idempotencia comprobada: segunda ejecución detectó duplicado, no insertó, partidos permanecieron en 3. |
+| R5 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Update de 1 documento (Poland vs Colombia 26/07/18): hora "6:00:00 p. m." → "7:30:00 p. m.". Equipos y fecha intactos. Idempotencia comprobada: segunda ejecución modifiedCount=0, todos los valores correctos. |
+| R6 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. Delete de 1 documento: Colombia vs England (20/08/18). Partidos: 3 → 2. Otros partidos intactos. Idempotencia comprobada: segunda ejecución no eliminó nada, partidos permanecieron en 2. |
+| R7 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 23 jugadores de Japan, proyección exacta (nombre, fechaNacimiento, posicion, club, sin _id). Conteo independiente validado: 23. Integridad de datos confirmada. |
+| R8 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 3 jugadores con estatura < 170 (OSHIMA 168, QUINTERO 169, INUI 169). Información completa mostrada. Filtro aplicado correctamente. Integridad de datos confirmada. |
+| R9 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. FIND: 2 partidos encontrados (Colombia vs Japan 11/07/18, Poland vs Colombia 26/07/18 con hora 7:30:00 p. m. de R5). Colombia vs England confirmado eliminado. countDocuments() = 2. |
+| R10 | VALIDADO | 2026-09-28 | Validado en MongoDB 8.3.11 local vía mongosh. AGGREGATE/FIND: altura máxima 194 cm calculada dinámicamente, 1 jugador encontrado (MINA Yerry). Lógica soporta empates. Ningún documento superior a máximo. Integridad confirmada. |
 
 ---
 
