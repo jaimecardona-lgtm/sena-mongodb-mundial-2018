@@ -289,6 +289,33 @@ GET /api/equipos/5
 - [x] Los 10 scripts R1-R10 continúan sin modificaciones
 - [x] `data/source/Datafile.xlsx` continúa intacto
 
+### CRUD Jugadores Implementado (Pendiente de Validación en Vivo)
+
+- [x] Archivo `api/src/models/jugador.model.js` con schema Mongoose
+- [x] Archivo `api/src/controllers/jugador.controller.js` con 5 funciones + filtros
+- [x] Archivo `api/src/routes/jugador.routes.js` montadas en /api/jugadores
+- [x] Actualización `api/src/app.js` importa y monta rutas
+- [x] Documentación `docs/aa2/03-endpoints.md` completa de CRUD Jugadores
+- [x] Documentación `docs/aa2/04-plan-validacion.md` con checklist CRUD Jugadores
+- [x] Sintaxis válida en todos los archivos nuevos
+- [x] 0 vulnerabilidades en npm audit
+- [x] Los 10 scripts R1-R10 continúan sin modificaciones
+- [x] `data/source/Datafile.xlsx` continúa intacto
+
+**Validación en Vivo Pendiente:**
+- [ ] GET /api/jugadores (colección)
+- [ ] GET /api/jugadores/:id (individual)
+- [ ] GET con filtros (team, numero, posicion, estatura)
+- [ ] POST válido
+- [ ] POST duplicado (409)
+- [ ] POST team inexistente (400)
+- [ ] PUT válido
+- [ ] PUT idempotencia
+- [ ] PUT conflicto team+numero (409)
+- [ ] DELETE válido
+- [ ] GET post-delete 404
+- [ ] Rollback final 2/46/2
+
 ### Validación Técnica
 
 - [x] `npm install` sin errores (completado)
@@ -359,6 +386,6 @@ GET /api/equipos/5
 
 ---
 
-**Versión:** 2.0
+**Versión:** 3.0
 **Fecha:** 2026-10-06
-**Estado:** CRUD Equipos implementado, pruebas en vivo pendientes
+**Estado:** CRUD Equipos validado, CRUD Jugadores implementado (pendiente validación en vivo), Partidos pendiente

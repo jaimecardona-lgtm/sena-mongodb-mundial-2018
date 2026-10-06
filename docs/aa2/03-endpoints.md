@@ -309,25 +309,131 @@ curl -X DELETE http://localhost:3000/api/equipos/5
 
 ---
 
-## Endpoints PENDIENTES
+## Jugadores
 
-Los siguientes endpoints se especificarán en fases posteriores:
+**Nota:** Jugadores NO posee un campo `id` funcional. Se usa MongoDB `_id` (ObjectId) como identificador. La unicidad funcional está garantizada por `team + numero`.
+
+### GET /api/jugadores
+
+**Propósito:** Listar todos los jugadores con filtros opcionales
+
+**Método HTTP:** GET
+
+**Parámetros de query (opcionales):**
+- `team` (string): Filtrar por equipo (ej: "Colombia")
+- `numero` (number): Filtrar por número de camiseta (ej: 10)
+- `posicion` (string): Filtrar por posición (ej: "GK")
+- `estaturaMin` (number): Altura mínima en cm
+- `estaturaMax` (number): Altura máxima en cm
+
+Los filtros pueden combinarse: `?team=Colombia&numero=10&estaturaMin=175`
+
+**Respuesta exitosa (200):**
+```json
+{
+  "status": "success",
+  "count": 23,
+  "data": [
+    {
+      "_id": "6ab9e8be727d291b5689f893",
+      "team": "Colombia",
+      "numero": 1,
+      "posicion": "GK",
+      "nombre": "OSPINA David",
+      "fechaNacimiento": "31.08.1988",
+      "nombreCamiseta": "OSPINA",
+      "club": "Arsenal FC (ENG)",
+      "estatura": 183,
+      "peso": 80
+    }
+  ]
+}
+```
+
+**Respuesta - Sin resultados (200):**
+```json
+{
+  "status": "success",
+  "count": 0,
+  "data": []
+}
+```
+
+**Respuesta - Validación fallida (400):**
+```json
+{
+  "status": "error",
+  "message": "El número debe ser un entero positivo"
+}
+```
+
+**Ejemplo:**
+```bash
+curl "http://localhost:3000/api/jugadores?team=Colombia&estaturaMin=180"
+```
 
 ---
 
-### Jugadores (GET, POST, PUT, DELETE)
-- [ ] GET `/api/jugadores` — Listar todos (con filtros opcionales)
-- [ ] GET `/api/jugadores/:id` — Obtener jugador por ID
-- [ ] GET `/api/jugadores?team=Colombia` — Filtrar por equipo
-- [ ] GET `/api/jugadores?altura_min=180` — Filtrar por altura
-- [ ] POST `/api/jugadores` — Crear nuevo jugador
-- [ ] PUT `/api/jugadores/:id` — Actualizar jugador
-- [ ] DELETE `/api/jugadores/:id` — Eliminar jugador
+### GET /api/jugadores/:id
 
-**Estructura esperada (Jugador):**
+**Propósito:** Obtener un jugador específico por MongoDB ObjectId
+
+**Método HTTP:** GET
+
+**Parámetros:**
+- `id` (path, requerido): MongoDB ObjectId del jugador (24 caracteres hexadecimales)
+
+**Respuesta exitosa (200):**
 ```json
 {
-  "_id": "ObjectId",
+  "status": "success",
+  "data": {
+    "_id": "6ab9e8be727d291b5689f893",
+    "team": "Colombia",
+    "numero": 1,
+    "posicion": "GK",
+    "nombre": "OSPINA David",
+    "fechaNacimiento": "31.08.1988",
+    "nombreCamiseta": "OSPINA",
+    "club": "Arsenal FC (ENG)",
+    "estatura": 183,
+    "peso": 80
+  }
+}
+```
+
+**Respuesta - ObjectId inválido (400):**
+```json
+{
+  "status": "error",
+  "message": "El id del jugador no es válido"
+}
+```
+
+**Respuesta - No encontrado (404):**
+```json
+{
+  "status": "error",
+  "message": "Jugador no encontrado"
+}
+```
+
+**Ejemplo:**
+```bash
+curl http://localhost:3000/api/jugadores/6ab9e8be727d291b5689f893
+```
+
+---
+
+### POST /api/jugadores
+
+**Propósito:** Crear un nuevo jugador
+
+**Método HTTP:** POST
+
+**Body requerido:**
+```json
+{
   "team": "Colombia",
   "numero": 10,
   "posicion": "CM",
@@ -339,6 +445,153 @@ Los siguientes endpoints se especificarán en fases posteriores:
   "peso": 75
 }
 ```
+
+**Validaciones:**
+- Todos los campos requeridos
+- `numero`: entero positivo
+- `estatura`, `peso`: enteros positivos
+- `fechaNacimiento`: formato DD.MM.YYYY
+- `team`: debe corresponder a un equipo existente
+- `team + numero`: combinación única
+
+**Respuesta exitosa (201):**
+```json
+{
+  "status": "success",
+  "message": "Jugador creado correctamente",
+  "data": {
+    "_id": "6ab9e8be727d291b5689f894",
+    "team": "Colombia",
+    "numero": 10,
+    "posicion": "CM",
+    "nombre": "RODRÍGUEZ James",
+    "fechaNacimiento": "12.07.1991",
+    "nombreCamiseta": "RODRÍGUEZ",
+    "club": "Real Madrid CF (ESP)",
+    "estatura": 180,
+    "peso": 75
+  }
+}
+```
+
+**Respuesta - Validación fallida (400):**
+```json
+{
+  "status": "error",
+  "message": "El equipo indicado no existe"
+}
+```
+
+**Respuesta - Duplicado (409):**
+```json
+{
+  "status": "error",
+  "message": "Ya existe un jugador con ese número en el equipo indicado"
+}
+```
+
+---
+
+### PUT /api/jugadores/:id
+
+**Propósito:** Actualizar un jugador (reemplazo completo)
+
+**Método HTTP:** PUT
+
+**Parámetros:**
+- `id` (path, requerido): MongoDB ObjectId del jugador
+
+**Body requerido:**
+```json
+{
+  "team": "Colombia",
+  "numero": 10,
+  "posicion": "CM",
+  "nombre": "RODRÍGUEZ James",
+  "fechaNacimiento": "12.07.1991",
+  "nombreCamiseta": "RODRÍGUEZ",
+  "club": "Real Madrid CF (ESP)",
+  "estatura": 180,
+  "peso": 75
+}
+```
+
+**Respuesta exitosa (200):**
+```json
+{
+  "status": "success",
+  "message": "Jugador actualizado correctamente",
+  "data": { ... }
+}
+```
+
+**Respuesta - ObjectId inválido (400):**
+```json
+{
+  "status": "error",
+  "message": "El id del jugador no es válido"
+}
+```
+
+**Respuesta - No encontrado (404):**
+```json
+{
+  "status": "error",
+  "message": "Jugador no encontrado"
+}
+```
+
+**Respuesta - Duplicado (409):**
+```json
+{
+  "status": "error",
+  "message": "Ya existe un jugador con ese número en el equipo indicado"
+}
+```
+
+---
+
+### DELETE /api/jugadores/:id
+
+**Propósito:** Eliminar un jugador
+
+**Método HTTP:** DELETE
+
+**Parámetros:**
+- `id` (path, requerido): MongoDB ObjectId del jugador
+
+**Respuesta exitosa (200):**
+```json
+{
+  "status": "success",
+  "message": "Jugador eliminado correctamente",
+  "data": { ... }
+}
+```
+
+**Respuesta - ObjectId inválido (400):**
+```json
+{
+  "status": "error",
+  "message": "El id del jugador no es válido"
+}
+```
+
+**Respuesta - No encontrado (404):**
+```json
+{
+  "status": "error",
+  "message": "Jugador no encontrado"
+}
+```
+
+---
+
+## Endpoints PENDIENTES
+
+Los siguientes endpoints se especificarán en fases posteriores:
+
+---
 
 ---
 
