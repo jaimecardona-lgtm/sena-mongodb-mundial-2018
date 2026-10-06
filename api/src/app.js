@@ -1,4 +1,5 @@
 import express from 'express';
+import { equipoRoutes } from './routes/equipo.routes.js';
 
 export function createApp() {
   const app = express();
@@ -12,6 +13,9 @@ export function createApp() {
       service: 'sena-mundial-2018-api'
     });
   });
+
+  // CRUD endpoints
+  app.use('/api/equipos', equipoRoutes);
 
   // 404 handler
   app.use((req, res) => {
