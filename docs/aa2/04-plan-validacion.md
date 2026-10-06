@@ -289,7 +289,7 @@ GET /api/equipos/5
 - [x] Los 10 scripts R1-R10 continúan sin modificaciones
 - [x] `data/source/Datafile.xlsx` continúa intacto
 
-### CRUD Jugadores Implementado (Pendiente de Validación en Vivo)
+### CRUD Jugadores Validado en Vivo
 
 - [x] Archivo `api/src/models/jugador.model.js` con schema Mongoose
 - [x] Archivo `api/src/controllers/jugador.controller.js` con 5 funciones + filtros
@@ -302,19 +302,58 @@ GET /api/equipos/5
 - [x] Los 10 scripts R1-R10 continúan sin modificaciones
 - [x] `data/source/Datafile.xlsx` continúa intacto
 
-**Validación en Vivo Pendiente:**
-- [ ] GET /api/jugadores (colección)
-- [ ] GET /api/jugadores/:id (individual)
-- [ ] GET con filtros (team, numero, posicion, estatura)
-- [ ] POST válido
-- [ ] POST duplicado (409)
-- [ ] POST team inexistente (400)
-- [ ] PUT válido
-- [ ] PUT idempotencia
-- [ ] PUT conflicto team+numero (409)
-- [ ] DELETE válido
-- [ ] GET post-delete 404
-- [ ] Rollback final 2/46/2
+**Validación en Vivo - Resultados REALES:**
+
+**GET /api/jugadores**
+- [x] ✅ HTTP 200
+- [x] ✅ status=success
+- [x] ✅ count=46
+- [x] ✅ Orden: team ASC, numero ASC
+- [x] ✅ Primero: Colombia #1 OSPINA David
+- [x] ✅ Último: Japan #23 NAKAMURA Kosuke
+
+**GET /api/jugadores/:id**
+- [x] ✅ ObjectId válido existente → HTTP 200 (OSPINA David)
+- [x] ✅ ObjectId "abc" → HTTP 400
+- [x] ✅ ObjectId 000000000000000000000000 (válido pero inexistente) → HTTP 404
+- [x] ✅ ObjectId 6ab9e8be727d291b5689f89z (inválido) → HTTP 400
+
+**GET con filtros**
+- [x] ✅ ?team=Colombia → 23 jugadores (todos Colombia)
+- [x] ✅ ?team=Colombia&numero=1 → 1 jugador (OSPINA David)
+- [x] ✅ ?numero=10abc → HTTP 400 (formato inválido)
+- [x] ✅ ?posicion=GK → 6 jugadores (todos GK)
+- [x] ✅ ?estaturaMin=190 → 1 jugador (MINA Yerry 194)
+- [x] ✅ ?estaturaMax=170 → 4 jugadores
+- [x] ✅ ?estaturaMin=180&estaturaMax=185 → 20 jugadores (rango correcto)
+- [x] ✅ ?estaturaMin=190&estaturaMax=180 → HTTP 400 (min > max)
+- [x] ✅ ?estaturaMin=180abc → HTTP 400 (formato inválido)
+
+**POST /api/jugadores**
+- [x] ✅ POST válido (Colombia #99) → HTTP 201
+- [x] ✅ _id asignado correctamente (6ac5409cd87f8ba8e161b25f)
+- [x] ✅ GET posterior del nuevo jugador → HTTP 200
+- [x] ✅ POST duplicado (mismo team+numero) → HTTP 409
+- [x] ✅ POST team inexistente (Narnia) → HTTP 400
+- [x] ✅ POST incompleto (falta campo) → HTTP 400
+
+**PUT /api/jugadores/:id**
+- [x] ✅ PUT válido (actualización completa) → HTTP 200
+- [x] ✅ _id sin cambios
+- [x] ✅ Segundo PUT idéntico → HTTP 200 (idempotencia validada)
+- [x] ✅ Estado final idéntico al primer PUT
+- [x] ✅ PUT incompleto → HTTP 400
+- [x] ✅ PUT conflicto team+numero (Colombia #1) → HTTP 409
+- [x] ✅ Jugador temporal intacto después de errores
+
+**DELETE /api/jugadores/:id**
+- [x] ✅ DELETE jugador temporal → HTTP 200
+- [x] ✅ GET post-delete → HTTP 404
+
+**Rollback/Baseline**
+- [x] ✅ db.equipos.countDocuments() = 2
+- [x] ✅ db.jugadores.countDocuments() = 46
+- [x] ✅ db.partidos.countDocuments() = 2
 
 ### Validación Técnica
 
