@@ -12,7 +12,9 @@ export interface AIChatResponse {
   evidence: any;
 }
 
-const AI_API_BASE = import.meta.env.VITE_AI_API_URL || 'http://localhost:8000';
+const AI_API_BASE =
+  import.meta.env.VITE_AI_API_URL ??
+  (import.meta.env.DEV ? 'http://localhost:8000' : '');
 
 export const aiApi = {
   async chat(request: AIChatRequest): Promise<AIChatResponse> {
