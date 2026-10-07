@@ -68,13 +68,26 @@ class Agent:
 
                 if result.get('status') == 'success':
                     data = result.get('data', [])
-                    metric_label = 'estatura (cm)' if metric == 'height' else 'peso (kg)'
-                    order_label = 'altos' if metric == 'height' and order == 'desc' else ('bajos' if metric == 'height' else ('pesados' if order == 'desc' else 'ligeros'))
-                    answer = f"Los {len(data)} jugadores {order_label}:\n\n"
+                    if metric == 'height':
+                        if order == 'desc':
+                            title = f"**Top {len(data)} jugadores más altos del Mundial 2018**"
+                        else:
+                            title = f"**Top {len(data)} jugadores de menor estatura del Mundial 2018**"
+                    else:  # weight
+                        if order == 'desc':
+                            title = f"**Top {len(data)} jugadores con mayor peso del Mundial 2018**"
+                        else:
+                            title = f"**Top {len(data)} jugadores con menor peso del Mundial 2018**"
+                    answer = title + "\n\n"
                     for item in data:
-                        value = item.get('height') or item.get('weight', 'N/A')
-                        answer += f"{item['rank']}. {item['name']} ({item['team']}) — {value}\n"
-                    answer += f"\nDatos consultados directamente en el dataset del Mundial 2018."
+                        if metric == 'height':
+                            value = item.get('height', 'N/A')
+                            unit = 'cm'
+                        else:
+                            value = item.get('weight', 'N/A')
+                            unit = 'kg'
+                        answer += f"{item['rank']}. **{item['name']}** ({item['team']}) — **{value} {unit}**\n"
+                    answer += f"\n_Datos consultados directamente en el dataset del Mundial 2018._"
                     return {
                         'status': 'success',
                         'request_id': request_id,
@@ -125,10 +138,10 @@ class Agent:
                     if result.get('status') == 'success':
                         data = result.get('data', [])
                         pos_label = 'Porteros' if position == 'GK' else ('Defensores' if position == 'CB' else ('Mediocampistas' if position == 'CM' else 'Delanteros'))
-                        answer = f"{pos_label} de {team}:\n\n"
+                        answer = f"**{pos_label} de {team}**\n\n"
                         for i, player in enumerate(data, 1):
-                            answer += f"{i}. {player['nombre']} (#{player['numero']}) — {player['club']}\n"
-                        answer += f"\nDatos consultados directamente en el dataset del Mundial 2018."
+                            answer += f"{i}. **{player['nombre']}** (#{player['numero']})\n   {player['club']}\n\n"
+                        answer += f"_Datos consultados directamente en el dataset del Mundial 2018._"
                         return {
                             'status': 'success',
                             'request_id': request_id,
@@ -156,13 +169,13 @@ class Agent:
 
                 if result.get('status') == 'success':
                     data = result.get('data', [])
-                    answer = f"Partidos de {team}:\n\n"
+                    answer = f"**Partidos de {team}**\n\n"
                     for match_item in data:
                         team1 = match_item.get('equipo1', 'N/A')
                         team2 = match_item.get('equipo2', 'N/A')
                         fecha = match_item.get('fecha', 'N/A')
-                        answer += f"• {team1} vs {team2} — {fecha}\n"
-                    answer += f"\nDatos consultados directamente en el dataset del Mundial 2018."
+                        answer += f"- **{team1} vs {team2}** — {fecha}\n"
+                    answer += f"\n_Datos consultados directamente en el dataset del Mundial 2018._"
                     return {
                         'status': 'success',
                         'request_id': request_id,
@@ -198,18 +211,18 @@ class Agent:
                     data = result.get('data', {})
                     a = data.get('team_a', {})
                     b = data.get('team_b', {})
-                    answer = f"Comparación {team_a} vs {team_b}:\n\n"
-                    answer += f"{team_a}\n"
-                    answer += f"  • Jugadores: {a.get('player_count', 'N/A')}\n"
-                    answer += f"  • Estatura promedio: {a.get('average_height', 'N/A')} cm\n"
-                    answer += f"  • Peso promedio: {a.get('average_weight', 'N/A')} kg\n"
-                    answer += f"  • Partidos: {a.get('match_count', 'N/A')}\n\n"
-                    answer += f"{team_b}\n"
-                    answer += f"  • Jugadores: {b.get('player_count', 'N/A')}\n"
-                    answer += f"  • Estatura promedio: {b.get('average_height', 'N/A')} cm\n"
-                    answer += f"  • Peso promedio: {b.get('average_weight', 'N/A')} kg\n"
-                    answer += f"  • Partidos: {b.get('match_count', 'N/A')}\n\n"
-                    answer += f"Datos consultados directamente en el dataset del Mundial 2018."
+                    answer = f"**Comparación: {team_a} vs {team_b}**\n\n"
+                    answer += f"**{team_a}**\n"
+                    answer += f"- Jugadores: **{a.get('player_count', 'N/A')}**\n"
+                    answer += f"- Estatura promedio: **{a.get('average_height', 'N/A')} cm**\n"
+                    answer += f"- Peso promedio: **{a.get('average_weight', 'N/A')} kg**\n"
+                    answer += f"- Partidos: **{a.get('match_count', 'N/A')}**\n\n"
+                    answer += f"**{team_b}**\n"
+                    answer += f"- Jugadores: **{b.get('player_count', 'N/A')}**\n"
+                    answer += f"- Estatura promedio: **{b.get('average_height', 'N/A')} cm**\n"
+                    answer += f"- Peso promedio: **{b.get('average_weight', 'N/A')} kg**\n"
+                    answer += f"- Partidos: **{b.get('match_count', 'N/A')}**\n\n"
+                    answer += f"_Datos consultados directamente en el dataset del Mundial 2018._"
                     return {
                         'status': 'success',
                         'request_id': request_id,
