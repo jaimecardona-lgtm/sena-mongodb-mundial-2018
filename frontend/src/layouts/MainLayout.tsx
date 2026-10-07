@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { Menu, X, Globe } from 'lucide-react';
+import { Menu, X, Globe, MessageCircle } from 'lucide-react';
+import { AssistantWidget } from '../components/AssistantWidget';
+import { useAssistant } from '../context/AssistantContext';
 
 export function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { openAssistant } = useAssistant();
 
   const navItems = [
     { label: 'Dashboard', path: '/' },
@@ -11,11 +14,10 @@ export function MainLayout() {
     { label: 'Jugadores', path: '/jugadores' },
     { label: 'Partidos', path: '/partidos' },
     { label: 'Estadísticas', path: '/estadisticas' },
-    { label: 'Asistente IA', path: '/asistente' },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-900">
+    <div className="worldcup-background flex h-screen bg-slate-900">
       {/* Sidebar */}
       <aside
         className={`${
@@ -43,7 +45,14 @@ export function MainLayout() {
             ))}
           </nav>
 
-          <div className="mt-8 pt-8 border-t border-slate-800">
+          <div className="mt-8 pt-8 border-t border-slate-800 space-y-2">
+            <button
+              onClick={openAssistant}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors font-medium"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Asistente IA
+            </button>
             <a
               href="http://localhost:3000/api-docs"
               target="_blank"
@@ -74,6 +83,9 @@ export function MainLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Global Assistant Widget */}
+      <AssistantWidget />
     </div>
   );
 }

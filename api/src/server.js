@@ -17,8 +17,9 @@ async function startServer() {
     const app = createApp();
 
     // Start listening
-    const server = app.listen(PORT, () => {
-      console.log(`\n✓ API Server listening on http://localhost:${PORT}`);
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      const host = NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+      console.log(`\n✓ API Server listening on http://${host}:${PORT}`);
       console.log(`✓ GET /api/health - Health check endpoint\n`);
     });
 

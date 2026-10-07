@@ -193,6 +193,80 @@ Para entender completamente el proyecto, revisar en orden:
 
 ---
 
-**Última actualización:** 2026-09-27
+## Producción - Despliegue Docker
+
+### Arquitectura
+
+El proyecto está preparado para despliegue como servicio único en Docker:
+
+```
+┌─────────────────────────────────┐
+│     Node/Express Gateway        │
+│  (Public, puerto $PORT)         │
+├─────────────────────────────────┤
+│  - Static React SPA             │
+│  - API REST CRUD                │
+│  - Swagger docs                 │
+│  - Proxy FastAPI                │
+└────────────┬────────────────────┘
+             │ (internal localhost)
+┌────────────▼────────────────────┐
+│      FastAPI AI Agent           │
+│  (Internal, puerto 8000)        │
+└─────────────────────────────────┘
+             │ (internal localhost)
+┌────────────▼────────────────────┐
+│  MongoDB Atlas (External)       │
+│  (via MONGODB_URI)              │
+└─────────────────────────────────┘
+```
+
+### Variables de Entorno
+
+**No-secretas** (definidas en render.yaml):
+- `NODE_ENV=production`
+- `OPENROUTER_MODEL=openrouter/free`
+
+**Secretas** (configurar en Render dashboard):
+- `MONGODB_URI` - MongoDB Atlas connection string
+- `OPENROUTER_API_KEY` - OpenRouter API key
+
+**Auto-generadas** (script interno):
+- `NODE_API_BASE_URL` - Calculado por start-production.sh: `http://127.0.0.1:${PORT}`
+- `PORT` - Proporcionado por Render dinámicamente
+
+### Despliegue Local (Docker Compose)
+
+```bash
+# Build y run con MongoDB local
+docker-compose up --build
+
+# Acceder a:
+# Frontend: http://localhost:8081
+# API: http://localhost:8081/api
+# Swagger: http://localhost:8081/api-docs/
+# MongoDB: localhost:27017 (local, no Atlas)
+```
+
+### Despliegue en Render
+
+1. Conectar repositorio a Render
+2. Crear Web Service desde Dockerfile
+3. Configurar variables de entorno secretas en dashboard:
+   - `MONGODB_URI`
+   - `OPENROUTER_API_KEY`
+4. Deploy automático en push a main
+
+### Archivos de Configuración
+
+- **Dockerfile** - Multi-stage build (frontend + runtime)
+- **.dockerignore** - Excluir archivos innecesarios
+- **docker-compose.yml** - Desarrollo local con MongoDB
+- **render.yaml** - Configuración Render
+- **scripts/start-production.sh** - Startup script para Docker
+
+---
+
+**Última actualización:** 2026-10-06
 **Licencia:** Académica (SENA)
 **Responsable:** ja23cardona1406

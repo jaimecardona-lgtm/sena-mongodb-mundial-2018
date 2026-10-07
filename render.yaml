@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: world-cup-2018-data-hub
+    runtime: docker
+    plan: free
+
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    healthCheckPath: /api/health
+    healthCheckProtocol: http
+
+    # Environment variables - non-sensitive
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OPENROUTER_MODEL
+        value: openrouter/free
+
+    # Secret environment variables - must be set in Render dashboard
+    secretFiles:
+      - name: MONGODB_URI
+        description: MongoDB Atlas connection string
+      - name: OPENROUTER_API_KEY
+        description: OpenRouter API key for AI services
+
+    # Auto-assigned by Render:
+    # - PORT (dynamically provided)
+    # - NODE_API_BASE_URL (computed by start-production.sh)
