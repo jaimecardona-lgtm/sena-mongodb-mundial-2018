@@ -10,7 +10,8 @@ class OpenRouterClient:
         self.api_key = settings.openrouter_api_key
         self.model = settings.openrouter_model
         self.base_url = "https://openrouter.ai/api/v1"
-        self.timeout = 30.0
+        self.client: Optional[httpx.AsyncClient] = None
+        self.timeout = httpx.Timeout(20.0, connect=5.0)
 
     def is_configured(self) -> bool:
         return self.api_key is not None and self.api_key.strip() != ""
@@ -59,10 +60,21 @@ class OpenRouterClient:
             return f"{base_message}: {upstream_msg}"
         return base_message
 
+    async def _get_client(self) -> httpx.AsyncClient:
+        """Get or create persistent AsyncClient"""
+        if self.client is None:
+            self.client = httpx.AsyncClient(timeout=self.timeout)
+        return self.client
+
+    async def close(self):
+        """Close the persistent client connection"""
+        if self.client is not None:
+            await self.client.aclose()
+            self.client = None
+
     async def chat_with_tools(
         self,
         system_prompt: str,
-        user_message: str,
         tools: List[Dict[str, Any]],
         history: Optional[List[dict]] = None,
     ) -> Dict[str, Any]:
@@ -80,18 +92,14 @@ class OpenRouterClient:
         ]
 
         if history:
-            messages.extend(history[-10:])  # Max 10 history items
-
-        # Only append user message if provided (in tool-calling loop, it may be None)
-        if user_message is not None:
-            messages.append({"role": "user", "content": user_message})
+            messages.extend(history[-10:])
 
         payload = {
             "model": self.model,
             "messages": messages,
             "tools": tools,
             "tool_choice": "auto",
-            "max_tokens": 2000,
+            "max_tokens": 700,
         }
 
         # Log request structure for diagnostics (without sensitive data)
@@ -104,32 +112,30 @@ class OpenRouterClient:
             f"tool_choice=auto"
         )
 
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(
-                    f"{self.base_url}/chat/completions",
-                    json=payload,
-                    headers=headers,
-                    timeout=self.timeout,
-                )
-                response.raise_for_status()
-                return response.json()
-            except httpx.HTTPStatusError as exc:
-                status_code = exc.response.status_code
-                upstream_msg = self._extract_upstream_error(exc)
-                error_msg = self._get_error_message(status_code, upstream_msg)
+        client = await self._get_client()
+        try:
+            response = await client.post(
+                f"{self.base_url}/chat/completions",
+                json=payload,
+                headers=headers,
+            )
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as exc:
+            status_code = exc.response.status_code
+            upstream_msg = self._extract_upstream_error(exc)
+            error_msg = self._get_error_message(status_code, upstream_msg)
 
-                # Log safely without exposing secrets
-                log_detail = upstream_msg if upstream_msg else "no details"
-                logger.error(f"OpenRouter HTTP {status_code}: {log_detail}")
+            log_detail = upstream_msg if upstream_msg else "no details"
+            logger.error(f"OpenRouter HTTP {status_code}: {log_detail}")
 
-                raise ValueError(error_msg)
-            except httpx.RequestError as exc:
-                logger.error(f"OpenRouter connection error: {type(exc).__name__}")
-                raise ValueError("Unable to reach OpenRouter - connection failed")
-            except Exception as e:
-                logger.error(f"OpenRouter error: {type(e).__name__}")
-                raise
+            raise ValueError(error_msg)
+        except httpx.RequestError as exc:
+            logger.error(f"OpenRouter connection error: {type(exc).__name__}")
+            raise ValueError("Unable to reach OpenRouter - connection failed")
+        except Exception as e:
+            logger.error(f"OpenRouter error: {type(e).__name__}")
+            raise
 
 
 openrouter_client = OpenRouterClient()

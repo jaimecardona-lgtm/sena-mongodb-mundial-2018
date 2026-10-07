@@ -15,7 +15,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: OPENROUTER_MODEL
-        value: openrouter/free
+        value: nvidia/nemotron-3.5-lightning:free
 
     # Secret environment variables - must be set in Render dashboard
     secretFiles:

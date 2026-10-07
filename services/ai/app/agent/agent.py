@@ -1,5 +1,7 @@
 import json
 import time
+import re
+import unicodedata
 from typing import Optional, List, Dict, Any
 from app.clients.openrouter import openrouter_client
 from app.clients.node_api import node_api_client
@@ -10,8 +12,214 @@ from app.utils.logging import logger, log_request
 
 class Agent:
     def __init__(self):
-        self.max_iterations = 4
+        self.max_iterations = 3
         self.tools = get_tool_definitions()
+        self._teams_cache = None
+
+    def _normalize_text(self, text: str) -> str:
+        """Normalize text: lowercase, remove accents, trim spaces"""
+        text = text.lower().strip()
+        text = unicodedata.normalize('NFD', text)
+        text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+        return text
+
+    async def _get_teams_cache(self) -> List[Dict[str, Any]]:
+        """Get teams with caching to avoid repeated API calls"""
+        if self._teams_cache is None:
+            self._teams_cache = await node_api_client.get_teams()
+        return self._teams_cache
+
+    def _find_team(self, team_name: str) -> Optional[str]:
+        """Find team by name with fuzzy matching"""
+        if self._teams_cache is None:
+            return None
+        normalized = self._normalize_text(team_name)
+        for team in self._teams_cache:
+            if self._normalize_text(team['country']) == normalized:
+                return team['country']
+        return None
+
+    async def try_fast_path(
+        self, user_message: str, request_id: str
+    ) -> Optional[Dict[str, Any]]:
+        """Try to handle request via fast path without LLM call"""
+        msg_lower = user_message.lower()
+
+        # Pattern 1: Player rankings (altos/bajos/pesados/ligeros) - NO necesita teams cache
+        ranking_patterns = [
+            (r'(?:cuáles son |muéstrame |top |)\b(\d+)?\s*(?:jugadores|players)?\s*(?:más )?(altos|altas|mayor estatura|tall|highest)', 'height', 'desc'),
+            (r'(?:cuáles son |muéstrame |top |)\b(\d+)?\s*(?:jugadores|players)?\s*(?:más )?(bajos|baja|menor estatura|short|lowest)', 'height', 'asc'),
+            (r'(?:cuáles son |muéstrame |top |)\b(\d+)?\s*(?:jugadores|players)?\s*(?:más )?(pesados|heavy|weight)', 'weight', 'desc'),
+            (r'(?:cuáles son |muéstrame |top |)\b(\d+)?\s*(?:jugadores|players)?\s*(?:más )?(livianos|ligeros|light|lightest)', 'weight', 'asc'),
+        ]
+
+        for pattern, metric, order in ranking_patterns:
+            match = re.search(pattern, msg_lower)
+            if match:
+                limit = int(match.group(1)) if match.group(1) else 5
+                limit = min(limit, 50)
+                start_time = time.time()
+                result = await self.execute_tool(
+                    'get_player_rankings',
+                    {'metric': metric, 'order': order, 'limit': limit}
+                )
+                duration_ms = int((time.time() - start_time) * 1000)
+                log_request(request_id, f"fast_path tool=get_player_rankings duration_ms={duration_ms}")
+
+                if result.get('status') == 'success':
+                    data = result.get('data', [])
+                    metric_label = 'estatura (cm)' if metric == 'height' else 'peso (kg)'
+                    order_label = 'altos' if metric == 'height' and order == 'desc' else ('bajos' if metric == 'height' else ('pesados' if order == 'desc' else 'ligeros'))
+                    answer = f"Los {len(data)} jugadores {order_label}:\n\n"
+                    for item in data:
+                        value = item.get('height') or item.get('weight', 'N/A')
+                        answer += f"{item['rank']}. {item['name']} ({item['team']}) — {value}\n"
+                    answer += f"\nDatos consultados directamente en el dataset del Mundial 2018."
+                    return {
+                        'status': 'success',
+                        'request_id': request_id,
+                        'answer': answer,
+                        'model': 'hybrid-fast-path',
+                        'tools_used': ['get_player_rankings'],
+                        'evidence': None
+                    }
+
+        # Load teams cache only if Pattern 2, 3, or 4 might match
+        # Pattern 2: Players by position and team
+        position_pattern = r'(?:porteros|goalkeepers|gk|arqueros|defensores|defenders|cb|mediocampistas|midfielders|cm|delanteros|forwards|cf|strikers)\s+(?:de|from|de|en)\s+(\w+(?:\s+\w+)?)'
+        match = re.search(position_pattern, msg_lower)
+        if not match:
+            position_pattern = r'(?:porteros|goalkeepers|gk|arqueros|defensores|defenders|cb|mediocampistas|midfielders|cm|delanteros|forwards|cf|strikers)\s+(?:de|from)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'
+            match = re.search(position_pattern, user_message)
+
+        # Only load teams if we might need them (Pattern 2, 3, 4)
+        teams = None
+        if match or re.search(r'(?:partidos|matches)\s+(?:jugó|de|from)', msg_lower) or re.search(r'(?:compara|compare)\s+', msg_lower):
+            teams = await self._get_teams_cache()
+
+        if match and teams:
+            team_name = match.group(1)
+            team = self._find_team(team_name)
+            if team:
+                pos_map = {
+                    'portero': 'GK', 'goalkeeper': 'GK', 'gk': 'GK', 'arquero': 'GK',
+                    'defensor': 'CB', 'defender': 'CB', 'cb': 'CB',
+                    'mediocampista': 'CM', 'midfielder': 'CM', 'cm': 'CM',
+                    'delantero': 'CF', 'forward': 'CF', 'cf': 'CF', 'striker': 'CF'
+                }
+                position = None
+                for key, val in pos_map.items():
+                    if key in msg_lower:
+                        position = val
+                        break
+
+                if position:
+                    start_time = time.time()
+                    result = await self.execute_tool(
+                        'search_players',
+                        {'team': team, 'position': position, 'limit': 50}
+                    )
+                    duration_ms = int((time.time() - start_time) * 1000)
+                    log_request(request_id, f"fast_path tool=search_players duration_ms={duration_ms}")
+
+                    if result.get('status') == 'success':
+                        data = result.get('data', [])
+                        pos_label = 'Porteros' if position == 'GK' else ('Defensores' if position == 'CB' else ('Mediocampistas' if position == 'CM' else 'Delanteros'))
+                        answer = f"{pos_label} de {team}:\n\n"
+                        for i, player in enumerate(data, 1):
+                            answer += f"{i}. {player['nombre']} (#{player['numero']}) — {player['club']}\n"
+                        answer += f"\nDatos consultados directamente en el dataset del Mundial 2018."
+                        return {
+                            'status': 'success',
+                            'request_id': request_id,
+                            'answer': answer,
+                            'model': 'hybrid-fast-path',
+                            'tools_used': ['search_players'],
+                            'evidence': None
+                        }
+
+        # Pattern 3: Matches by team
+        matches_pattern = r'(?:partidos|matches|encuentros|games)?\s*(?:que\s+)?jugó\s+(\w+(?:\s+\w+)?)|(?:partidos|matches)\s+(?:de|from)\s+(\w+(?:\s+\w+)?)'
+        match = re.search(matches_pattern, msg_lower)
+        if not match:
+            matches_pattern = r'(?:partidos|matches)\s+(?:de|from)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'
+            match = re.search(matches_pattern, user_message)
+
+        if match and teams:
+            team_name = match.group(1) or match.group(2)
+            team = self._find_team(team_name)
+            if team:
+                start_time = time.time()
+                result = await self.execute_tool('get_matches', {'team': team})
+                duration_ms = int((time.time() - start_time) * 1000)
+                log_request(request_id, f"fast_path tool=get_matches duration_ms={duration_ms}")
+
+                if result.get('status') == 'success':
+                    data = result.get('data', [])
+                    answer = f"Partidos de {team}:\n\n"
+                    for match_item in data:
+                        team1 = match_item.get('equipo1', 'N/A')
+                        team2 = match_item.get('equipo2', 'N/A')
+                        fecha = match_item.get('fecha', 'N/A')
+                        answer += f"• {team1} vs {team2} — {fecha}\n"
+                    answer += f"\nDatos consultados directamente en el dataset del Mundial 2018."
+                    return {
+                        'status': 'success',
+                        'request_id': request_id,
+                        'answer': answer,
+                        'model': 'hybrid-fast-path',
+                        'tools_used': ['get_matches'],
+                        'evidence': None
+                    }
+
+        # Pattern 4: Team comparison
+        compare_pattern = r'(?:compara|compare)\s+(\w+(?:\s+\w+)?)\s+(?:y|and|vs)\s+(\w+(?:\s+\w+)?)|(?:diferencia|difference)\s+(?:entre|between)\s+(\w+(?:\s+\w+)?)\s+(?:y|and)\s+(\w+(?:\s+\w+)?)'
+        match = re.search(compare_pattern, msg_lower)
+        if not match:
+            compare_pattern = r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:vs|versus|vs\.)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'
+            match = re.search(compare_pattern, user_message)
+
+        if match and teams:
+            team_a_name = match.group(1) or match.group(3)
+            team_b_name = match.group(2) or match.group(4)
+            team_a = self._find_team(team_a_name)
+            team_b = self._find_team(team_b_name)
+
+            if team_a and team_b:
+                start_time = time.time()
+                result = await self.execute_tool(
+                    'compare_teams',
+                    {'team_a': team_a, 'team_b': team_b}
+                )
+                duration_ms = int((time.time() - start_time) * 1000)
+                log_request(request_id, f"fast_path tool=compare_teams duration_ms={duration_ms}")
+
+                if result.get('status') == 'success':
+                    data = result.get('data', {})
+                    a = data.get('team_a', {})
+                    b = data.get('team_b', {})
+                    answer = f"Comparación {team_a} vs {team_b}:\n\n"
+                    answer += f"{team_a}\n"
+                    answer += f"  • Jugadores: {a.get('player_count', 'N/A')}\n"
+                    answer += f"  • Estatura promedio: {a.get('average_height', 'N/A')} cm\n"
+                    answer += f"  • Peso promedio: {a.get('average_weight', 'N/A')} kg\n"
+                    answer += f"  • Partidos: {a.get('match_count', 'N/A')}\n\n"
+                    answer += f"{team_b}\n"
+                    answer += f"  • Jugadores: {b.get('player_count', 'N/A')}\n"
+                    answer += f"  • Estatura promedio: {b.get('average_height', 'N/A')} cm\n"
+                    answer += f"  • Peso promedio: {b.get('average_weight', 'N/A')} kg\n"
+                    answer += f"  • Partidos: {b.get('match_count', 'N/A')}\n\n"
+                    answer += f"Datos consultados directamente en el dataset del Mundial 2018."
+                    return {
+                        'status': 'success',
+                        'request_id': request_id,
+                        'answer': answer,
+                        'model': 'hybrid-fast-path',
+                        'tools_used': ['compare_teams'],
+                        'evidence': None
+                    }
+
+        return None
 
     async def execute_tool(
         self, tool_name: str, tool_input: Dict[str, Any]
@@ -145,7 +353,7 @@ class Agent:
                 limit = min(tool_input.get("limit", 10), 100)
 
                 players = await node_api_client.search_players(
-                    team=team, limit=200, sort_by="nombre"
+                    team=team, limit=1000, sort_by="nombre"
                 )
 
                 if metric == "height":
@@ -186,8 +394,12 @@ class Agent:
         user_message: str,
         history: Optional[List[dict]] = None,
     ) -> Dict[str, Any]:
-        """Main agent loop"""
+        """Main agent loop with fast path optimization"""
         log_request(request_id, f"request_start message={user_message[:50]}...")
+
+        fast_result = await self.try_fast_path(user_message, request_id)
+        if fast_result:
+            return fast_result
 
         if not openrouter_client.is_configured():
             return {
@@ -228,7 +440,6 @@ class Agent:
             try:
                 response = await openrouter_client.chat_with_tools(
                     system_prompt=SYSTEM_PROMPT,
-                    user_message=user_message if iteration == 1 else None,
                     tools=self.tools,
                     history=messages,
                 )

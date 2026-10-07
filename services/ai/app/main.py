@@ -1,4 +1,5 @@
 import uuid
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
@@ -6,6 +7,7 @@ from app.models.requests import ChatRequest
 from app.models.responses import ChatResponse, HealthResponse, CapabilitiesResponse
 from app.agent.agent import Agent
 from app.clients.node_api import node_api_client
+from app.clients.openrouter import openrouter_client
 from app.utils.logging import setup_logging, logger
 
 setup_logging()
@@ -22,10 +24,18 @@ def validate_config():
 
 validate_config()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await openrouter_client.close()
+
+
 app = FastAPI(
     title="World Cup 2018 AI Agent",
     version="1.0.0",
     description="Servicio de inteligencia artificial con herramientas para consultar y analizar datos reales de la Copa Mundial 2018.",
+    lifespan=lifespan,
 )
 
 # CORS

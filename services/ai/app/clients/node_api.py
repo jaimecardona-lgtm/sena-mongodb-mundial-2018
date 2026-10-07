@@ -39,7 +39,7 @@ class NodeAPIClient:
         order: str = "asc",
         limit: int = 100,
     ) -> List[Dict[str, Any]]:
-        limit = min(limit, 200)  # Max 200
+        limit = min(limit, 1000)  # Max 1000 to include all 736 players for global rankings
 
         params = {}
         if team:
