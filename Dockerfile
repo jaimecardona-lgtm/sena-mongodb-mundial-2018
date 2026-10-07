@@ -2,14 +2,14 @@
 # Stage 1: Build React frontend
 FROM node:22-alpine AS frontend-builder
 
-WORKDIR /app
-
-# Copy frontend source
-COPY frontend/package*.json ./frontend/
 WORKDIR /app/frontend
 
-# Install dependencies and build
-RUN npm ci && npm run build
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ ./
+
+RUN npm run build
 
 # Stage 2: Runtime
 FROM node:22-slim
@@ -47,13 +47,13 @@ RUN pip install --no-cache-dir -r ./services/ai/requirements.txt
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # Copy additional assets
-COPY frontend/public/assets ./frontend/public/assets 2>/dev/null || true
+COPY frontend/public/assets ./frontend/public/assets
 
 # Copy documentation
 COPY docs ./docs
 
 # Copy data directory (for reference, actual data comes from DB)
-COPY data ./data 2>/dev/null || true
+COPY data ./data
 
 # Set working directory to API
 WORKDIR /app/api
