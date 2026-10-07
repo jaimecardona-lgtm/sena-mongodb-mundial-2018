@@ -1,6 +1,6 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { openapi } from './docs/openapi.js';
@@ -20,7 +20,8 @@ export function createApp() {
   // Routes /api/ai/* to http://127.0.0.1:8000/api/ai/*
   app.use('/api/ai', createProxyMiddleware({
     target: 'http://127.0.0.1:8000',
-    changeOrigin: true
+    changeOrigin: true,
+    onProxyReq: fixRequestBody
   }));
 
   // Health check endpoint
