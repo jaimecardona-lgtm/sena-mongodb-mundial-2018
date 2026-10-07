@@ -7,8 +7,8 @@ const openapi = {
   },
   servers: [
     {
-      url: 'http://localhost:3000',
-      description: 'Servidor local de desarrollo'
+      url: '/',
+      description: 'Servidor actual'
     }
   ],
   tags: [

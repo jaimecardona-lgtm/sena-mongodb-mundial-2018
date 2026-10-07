@@ -8,6 +8,10 @@ export function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { openAssistant } = useAssistant();
 
+  const API_DOCS_URL = import.meta.env.DEV
+    ? 'http://localhost:3000/api-docs/'
+    : '/api-docs/';
+
   const navItems = [
     { label: 'Dashboard', path: '/' },
     { label: 'Equipos', path: '/equipos' },
@@ -54,7 +58,7 @@ export function MainLayout() {
               Asistente IA
             </button>
             <a
-              href="http://localhost:3000/api-docs"
+              href={API_DOCS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors font-medium"
