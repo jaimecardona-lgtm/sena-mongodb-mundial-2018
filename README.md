@@ -49,8 +49,6 @@ Modelar un sistema de datos documental que capture la complejidad de un torneo i
 sena-mongodb-mundial-2018/
 │
 ├── README.md                          # Este archivo
-├── AGENTS.md                          # Instrucciones para agentes de trabajo
-├── CLAUDE.md                          # Directrices para Claude Code
 ├── .gitignore                         # Configuración de Git
 │
 ├── docs/
@@ -141,15 +139,22 @@ Cada requerimiento corresponde a una operación MongoDB específica:
 
 ## Estado Actual
 
-**Fase:** Foundation (estructural y documental)
+**Fase actual:** AA2-EV01 FOUNDATION
 
-- ✅ Inspección del repositorio
-- ✅ Análisis del modelo de datos
-- ✅ Creación de estructura base
+**AA1-EV02 (Completada):**
+- ✅ 10 scripts MongoDB (R1-R10) implementados y validados
 - ✅ Documentación de requerimientos
-- ✅ Definición de validación QA
-- ⏳ Implementación R1-R10 (próxima fase)
-- ⏳ Validación y evidencia (próxima fase)
+- ✅ Protocolo QA definido
+- ✅ Evidencia reproducible
+
+**AA2-EV01 (En progreso):**
+- ✅ Estructura API Foundation creada
+- ✅ Express app con health endpoint
+- ✅ Mongoose configurado
+- ✅ Documentación AA2 base
+- ⏳ Instalación npm
+- ⏳ Modelos CRUD
+- ⏳ Endpoints CRUD
 
 ## Ejecución Posterior
 
@@ -181,14 +186,87 @@ Esto es apropiado para MongoDB y mantiene consistencia con los datos académicos
 
 Para entender completamente el proyecto, revisar en orden:
 
-1. **[CLAUDE.md](./CLAUDE.md)** — Instrucciones técnicas detalladas
-2. **[docs/knowledge/01-requerimientos.md](./docs/knowledge/01-requerimientos.md)** — Especificación oficial
-3. **[docs/knowledge/02-modelo-datos.md](./docs/knowledge/02-modelo-datos.md)** — Decisiones de modelado
-4. **[docs/knowledge/03-mapeo-evidencia.md](./docs/knowledge/03-mapeo-evidencia.md)** — Trazabilidad R1-R10
-5. **[docs/knowledge/04-validacion.md](./docs/knowledge/04-validacion.md)** — Protocolo QA
+1. **[docs/knowledge/01-requerimientos.md](./docs/knowledge/01-requerimientos.md)** — Especificación oficial
+2. **[docs/knowledge/02-modelo-datos.md](./docs/knowledge/02-modelo-datos.md)** — Decisiones de modelado
+3. **[docs/knowledge/03-mapeo-evidencia.md](./docs/knowledge/03-mapeo-evidencia.md)** — Trazabilidad R1-R10
+4. **[docs/knowledge/04-validacion.md](./docs/knowledge/04-validacion.md)** — Protocolo QA
 
 ---
 
-**Última actualización:** 2026-09-27
+## Producción - Despliegue Docker
+
+### Arquitectura
+
+El proyecto está preparado para despliegue como servicio único en Docker:
+
+```
+┌─────────────────────────────────┐
+│     Node/Express Gateway        │
+│  (Public, puerto $PORT)         │
+├─────────────────────────────────┤
+│  - Static React SPA             │
+│  - API REST CRUD                │
+│  - Swagger docs                 │
+│  - Proxy FastAPI                │
+└────────────┬────────────────────┘
+             │ (internal localhost)
+┌────────────▼────────────────────┐
+│      FastAPI AI Agent           │
+│  (Internal, puerto 8000)        │
+└─────────────────────────────────┘
+             │ (internal localhost)
+┌────────────▼────────────────────┐
+│  MongoDB Atlas (External)       │
+│  (via MONGODB_URI)              │
+└─────────────────────────────────┘
+```
+
+### Variables de Entorno
+
+**No-secretas** (definidas en render.yaml):
+- `NODE_ENV=production`
+- `OPENROUTER_MODEL=openrouter/free`
+
+**Secretas** (configurar en Render dashboard):
+- `MONGODB_URI` - MongoDB Atlas connection string
+- `OPENROUTER_API_KEY` - OpenRouter API key
+
+**Auto-generadas** (script interno):
+- `NODE_API_BASE_URL` - Calculado por start-production.sh: `http://127.0.0.1:${PORT}`
+- `PORT` - Proporcionado por Render dinámicamente
+
+### Despliegue Local (Docker Compose)
+
+```bash
+# Build y run con MongoDB local
+docker-compose up --build
+
+# Acceder a:
+# Frontend: http://localhost:8081
+# API: http://localhost:8081/api
+# Swagger: http://localhost:8081/api-docs/
+# MongoDB: localhost:27017 (local, no Atlas)
+```
+
+### Despliegue en Render
+
+1. Conectar repositorio a Render
+2. Crear Web Service desde Dockerfile
+3. Configurar variables de entorno secretas en dashboard:
+   - `MONGODB_URI`
+   - `OPENROUTER_API_KEY`
+4. Deploy automático en push a main
+
+### Archivos de Configuración
+
+- **Dockerfile** - Multi-stage build (frontend + runtime)
+- **.dockerignore** - Excluir archivos innecesarios
+- **docker-compose.yml** - Desarrollo local con MongoDB
+- **render.yaml** - Configuración Render
+- **scripts/start-production.sh** - Startup script para Docker
+
+---
+
+**Última actualización:** 2026-10-06
 **Licencia:** Académica (SENA)
 **Responsable:** ja23cardona1406

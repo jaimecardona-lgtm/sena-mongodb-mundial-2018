@@ -8,6 +8,11 @@ yarn.lock
 .env.local
 .env.*.local
 
+# Claude Code local configuration
+CLAUDE.md
+AGENTS.md
+.claude/
+
 # IDE
 .vscode/
 .idea/
@@ -47,3 +52,8 @@ test-output/
 !evidence/screenshots/
 !mongodb/
 !docs/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]

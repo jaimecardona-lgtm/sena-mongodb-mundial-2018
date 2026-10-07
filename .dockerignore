@@ -1,0 +1,61 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules
+.npm
+**/node_modules
+
+# Python
+.venv
+venv
+env
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+dist
+build
+
+# Build outputs
+frontend/dist
+dist
+build
+coverage
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+
+# Testing
+.nyc_output
+.coverage
+.pytest_cache
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Keep these
+!data/source/Datafile.xlsx
+!mongodb/
+!docs/
+!frontend/public/assets/
